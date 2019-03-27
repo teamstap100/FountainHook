@@ -100,6 +100,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         RING_2_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/0a101af1-cb8a-448f-bfa3-1711337e7419@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/ea6e07c0d3164ea5b0a4fa970158069e/57e55a0b-56ad-4108-8319-8d5d9a7ea6fc");
         RING_3_9_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/0a101af1-cb8a-448f-bfa3-1711337e7419@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/aeeb2517cf164dcca3fdc26d490b7df9/57e55a0b-56ad-4108-8319-8d5d9a7ea6fc");
 
+        //RING_1_5_3_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/6fa5f8a98a0140568c5f628ed75d208a/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe");
+        //RING_4_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/6fa5f8a98a0140568c5f628ed75d208a/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe");
+        //RING_1_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/6fa5f8a98a0140568c5f628ed75d208a/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe");
+        //RING_2_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/6fa5f8a98a0140568c5f628ed75d208a/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe");
+        //RING_3_9_INTERNAL_HOOK_URIS.Add("https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/6fa5f8a98a0140568c5f628ed75d208a/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe");
+
         // Testing TAP channel
         //INCOMING_HOOK_URI = "https://outlook.office.com/webhook/37317ed8-68c1-4564-82bb-d2acc4c6b2b4@72f988bf-86f1-41af-91ab-2d7cd011db47/IncomingWebhook/b4073f0edef34b899ea708a4b6659978/512d26c9-aeed-4dbd-a16f-398bcf0ec3fe";
         // Vance channel
@@ -114,9 +120,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         SUB_ID_4 = "329348a5-0060-4640-90b6-94e8ef048118";
 
         // Don't know these yet
-        SUB_ID_1 = "";
-        SUB_ID_2 = "";
-        SUB_ID_3_9 = "";
+        SUB_ID_1 = "2b19dac9-b26e-45df-9a5b-9af21242bb9b";
+        SUB_ID_2 = "b338c37c-84fb-4b84-a9f0-5d248901ad64";
+        SUB_ID_3_9 = "a21d70e3-dd7f-4cd3-9088-fe70df8e8ada";
         FEEDBACK_DISABLED = true;
     } else {
         // Hook URI for TAP Feature Announcements Test channel
@@ -157,7 +163,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
     int featureId = jsonObj.resource.workItemId;
     string subscriptionId = jsonObj.subscriptionId;
-    if ((subscriptionId != SUB_ID_1_5) && (subscriptionId != SUB_ID_3) && (subscriptionId != SUB_ID_4)) {
+    if ((subscriptionId != SUB_ID_1_5) && (subscriptionId != SUB_ID_3) && (subscriptionId != SUB_ID_4) && (subscriptionId != SUB_ID_1) && (subscriptionId != SUB_ID_2) && (subscriptionId != SUB_ID_3_9)) {
         log.Info("subscriptionId is " + subscriptionId + "; this sub not supported yet");
         return req.CreateResponse(HttpStatusCode.OK);
     }
@@ -167,18 +173,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     string featureDescription = "";
     try {
         featureDescription = jsonObj.resource.revision.fields["System.Description"].ToString();
-        //log.Info(jsonObj.resource.revision.fields["System.Description"].ToString());
-        //log.Info("Set featureDescription normally");
     } catch (Exception e) {
         featureDescription = "No description given";
-        //log.Info("Set feature description to nothing given");
     }
 
-    //log.Info("Got description");
-    //log.Info(featureDescription.ToString());
     log.Info("Description length is " + featureDescription.Length);
     if (featureDescription.Length > 1500) {
-        //featureDescription = Regex.Replace(featureDescription, "<.*?>", string.Empty);
         featureDescription = HtmlToText(featureDescription);
     }
     log.Info("Description length is now " + featureDescription.Length + " after converting to plaintext");
@@ -212,6 +212,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     } catch (Exception e) { }
     
     string featureUrl = jsonObj.resource._links.parent.href;
+    string featureHumanUrl = "https://domoreexp.visualstudio.com/MSTeams/_workitems/edit/" + featureId;
 
     // Fields for the internal notifications
     // Testing
@@ -288,7 +289,13 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                 }
             }
             else {
-                ringFieldName = FIELD_NAMESPACE + ".Ring" + ring;
+                if (ring == "3_9")
+                {
+                    ringFieldName = VALIDATION_FIELD_NAMESPACE + ".Ring" + ring;
+                } else {
+                    ringFieldName = FIELD_NAMESPACE + ".Ring" + ring;
+                }
+                
             }
 
             log.Info(ringFieldName);
@@ -309,7 +316,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     // Make it more readable
     availableRing = availableRing.Replace("1_5", "1.5");
     availableRing = availableRing.Replace("3_9", "3.9");
-    availableRing = availableRing.Trim( new Char[] { ' ', '+' } );
+    
 
     if (availableRingCount > 1) {
         if (availableRing.Contains("1 ")) {
@@ -327,7 +334,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                 log.Info("This is a duplicate notification. Skipping this one");
                 return req.CreateResponse(HttpStatusCode.OK);
             }
-        } else if (availableRing.Contains("3")) {
+        } else if (availableRing.Contains("3 ")) {
             if (subscriptionId != SUB_ID_3) {
                 log.Info("This is a duplicate notification. Skipping this one");
                 return req.CreateResponse(HttpStatusCode.OK);
@@ -351,8 +358,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         return req.CreateResponse(HttpStatusCode.OK);
     }
 
+    log.Info("available ring is " + availableRing);
+
     // Send the notification to the right destination, depending on which rings are newly enabled
-    if ((availableRing.Contains("1.5") || (availableRing.Contains("3")))) {
+    if ((availableRing.Contains("1.5") || (availableRing.Contains("3 ")))) {
         TEAMS_HOOK_URIS.AddRange(RING_1_5_3_HOOK_URIS);
         TEAMS_INTERNAL_HOOK_URIS.AddRange(RING_1_5_3_INTERNAL_HOOK_URIS);
     }
@@ -373,6 +382,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     if (availableRing.Contains("3.9")) {
         TEAMS_INTERNAL_HOOK_URIS.AddRange(RING_3_9_INTERNAL_HOOK_URIS);
     }
+
+    // Remove trailing spaces.... after we check for "1 " and "3 "
+    availableRing = availableRing.Trim( new Char[] { ' ', '+' } );
 
     /*
         Get the enablement status of rings 1.5, 3, and 4.
@@ -444,9 +456,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     // Generate the card that will show up in Teams
     log.Info("About to make betterCard");
 
+    string tapSafeAvailableRing = availableRing.Replace("+ 3.9", "").Replace("+ 2", "").Replace("1 + ", " ");
+
     dynamic betterCard = new {
-        summary = "Feature now available for " + availableRing,
-        title = "Feature now available for " + availableRing,
+        summary = "Feature now available for " + tapSafeAvailableRing,
+        title = "Feature now available for " + tapSafeAvailableRing,
         sections = new object [] {
             new {
                 activityTitle = featureTitle,
@@ -613,10 +627,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
     dynamic internalCard = new {
         summary = "Feature now available for " + availableRing,
-        title = "[Feature now available for " + availableRing + "](" + featureUrl + ")",
+        title = "Feature now available for " + availableRing,
         sections = new object [] {
             new {
-                activityTitle = "#" + featureId + ": " + featureTitle,
+                activityTitle = "[#" + featureId + ": " + featureTitle + "](" + featureHumanUrl + ")",
                 activitySubtitle = featureDescription,
                 activityImage = "https://i.imgur.com/xqG1HMv.png",
                 facts = new [] {
@@ -654,23 +668,23 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                 activityTitle = "Testing and Automation",
                 facts = new [] {
                     new {
-                        name = "Before R0 - Test Plan",
+                        name = "Test Plan",
                         value = testPlan
                     },
                     new {
-                        name = "Before R0 - Scenario/Unit Tests",
+                        name = "Scenario/Unit Tests",
                         value = testingScenario
                     },
                     new {
-                        name = "Before R0 - Manual Tests",
+                        name = "Manual Tests",
                         value = testingManualTests
                     },
                     new {
-                        name = "Before R0 - Manual Tests full test pass is scheduled on",
+                        name = "Manual Tests full test pass is scheduled on",
                         value = testingFullTestPass
                     },
                     new {
-                        name = "Before R2 - Manual Tests - offshore vendor test pass",
+                        name = "Manual Tests - offshore vendor test pass",
                         value = testingOffshore
                     }
                 }
@@ -687,7 +701,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                         value = techReadiness
                     },
                     new {
-                        name = "Is O365 message center required before R4?",
+                        name = "O365 message center required before R4?",
                         value = techReadinessO365
                     }
                 }
@@ -719,11 +733,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     betterCardJObject["potentialAction"][0]["actions"][0]["body"][0]["thisCard"] = betterCardObjectString;
     betterCardJObject["potentialAction"][0]["actions"][0]["body"] = betterCardJObject["potentialAction"][0]["actions"][0]["body"].ToString();
 
-    log.Info("About to access second thisCard");
     betterCardJObject["potentialAction"][1]["actions"][0]["body"][0]["thisCard"] = betterCardObjectString;
     betterCardJObject["potentialAction"][1]["actions"][0]["body"] = betterCardJObject["potentialAction"][1]["actions"][0]["body"].ToString();
-
-    log.Info("Accessed second thisCard alright");
 
     // Feedback is disabled for now in production. Display the info but none of the actions.
     if (FEEDBACK_DISABLED) {
@@ -752,9 +763,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         }
     }
 
+    log.Info("internalCardJson is " + internalCardJson);
+
     // Send internal card to internal folks
     foreach (string internal_hook_uri in TEAMS_INTERNAL_HOOK_URIS)
     {
+        log.Info("Sending internalCardJson to " + internal_hook_uri);
         using (var client = new HttpClient())
         {
             var response = await client.PostAsync(
